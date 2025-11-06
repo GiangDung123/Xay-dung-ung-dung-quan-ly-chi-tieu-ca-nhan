@@ -36,9 +36,9 @@ if (isset($_POST['them'])) {
     $sql = "INSERT INTO expenses (user_id, title, amount, note, date)
             VALUES ('$user_id', '$title', '$amount', '$note', '$date')";
     if (mysqli_query($conn, $sql)) {
-        $message = "✅ Đã thêm chi tiêu thành công!";
+        $message = " Đã thêm chi tiêu thành công!";
     } else {
-        $message = "❌ Lỗi khi thêm: " . mysqli_error($conn);
+        $message = " Lỗi khi thêm: " . mysqli_error($conn);
     }
 }
 
@@ -167,7 +167,7 @@ $result = mysqli_query($conn,
 </head>
 <body>
 <div class="container">
-    <h2>💸 Quản lý Chi tiêu</h2>
+    <h2> Quản lý Chi tiêu</h2>
     <p style="text-align:center;">Xin chào, <b><?php echo $_SESSION['username']; ?></b> 👋</p>
 
     <?php if ($message): ?>
@@ -187,10 +187,10 @@ $result = mysqli_query($conn,
         <label>Ngày chi:</label>
         <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>">
 
-        <button type="submit" name="them">➕ Thêm chi tiêu</button>
+        <button type="submit" name="them"> Thêm chi tiêu</button>
     </form>
 
-    <h3>📋 Danh sách chi tiêu</h3>
+    <h3> Danh sách chi tiêu</h3>
     <table>
         <tr>
             <th>Ngày</th>

@@ -166,7 +166,7 @@ if ($isLoggedIn) {
 </div>
 
 <div class="container">
-    <h2>💰 Quản lý thu chi cá nhân</h2>
+    <h2> Quản lý thu chi cá nhân</h2>
 
     <div class="box">Số tiền hiện tại đang có: 
         <span style="color:#27ae60">

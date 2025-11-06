@@ -37,9 +37,9 @@ if (isset($_POST['them'])) {
             VALUES ('$user_id', '$title', '$amount', '$note', '$date')";
 
     if (mysqli_query($conn, $sql)) {
-        $message = "✅ Đã thêm thu nhập thành công!";
+        $message = " Đã thêm thu nhập thành công!";
     } else {
-        $message = "❌ Lỗi khi thêm: " . mysqli_error($conn);
+        $message = " Lỗi khi thêm: " . mysqli_error($conn);
     }
 }
 
@@ -168,7 +168,7 @@ $result = mysqli_query($conn,
 </head>
 <body>
 <div class="container">
-    <h2>💰 Quản lý Thu nhập</h2>
+    <h2> Quản lý Thu nhập</h2>
     <p style="text-align:center;">Xin chào, <b><?php echo $_SESSION['username']; ?></b> 👋</p>
 
     <?php if ($message): ?>
@@ -188,10 +188,10 @@ $result = mysqli_query($conn,
         <label>Ngày thu:</label>
         <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>">
 
-        <button type="submit" name="them">➕ Thêm thu nhập</button>
+        <button type="submit" name="them"> Thêm thu nhập</button>
     </form>
 
-    <h3>📋 Danh sách thu nhập</h3>
+    <h3> Danh sách thu nhập</h3>
     <table>
         <tr>
             <th>Ngày</th>
