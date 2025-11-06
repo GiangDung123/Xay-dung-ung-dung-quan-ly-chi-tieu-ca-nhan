@@ -205,7 +205,7 @@ if ($isLoggedIn) {
 
     <div class="history">
         <div class="history-box">
-            <h3>Lịch sử Thu nhập</h3>
+            <h3>Lịch sử thu nhập</h3>
             <table>
                 <tr><th>Ngày</th><th>Tên</th><th>Số tiền</th></tr>
                 <?php if ($isLoggedIn && count($income_list) > 0): ?>
@@ -226,7 +226,7 @@ if ($isLoggedIn) {
         </div>
 
         <div class="history-box">
-            <h3>Lịch sử Chi tiêu</h3>
+            <h3>Lịch sử chi tiêu</h3>
             <table>
                 <tr><th>Ngày</th><th>Tên</th><th>Số tiền</th></tr>
                 <?php if ($isLoggedIn && count($expense_list) > 0): ?>

@@ -167,7 +167,7 @@ $result = mysqli_query($conn,
 </head>
 <body>
 <div class="container">
-    <h2> Quản lý Chi tiêu</h2>
+    <h2> Quản lý chi tiêu</h2>
     <p style="text-align:center;">Xin chào, <b><?php echo $_SESSION['username']; ?></b> 👋</p>
 
     <?php if ($message): ?>
