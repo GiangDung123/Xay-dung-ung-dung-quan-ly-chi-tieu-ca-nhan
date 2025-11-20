@@ -28,14 +28,14 @@ $user_id = $row['id'];
 $role = $row['role'];
 
 // =======================
-// 1️⃣ THÊM DANH MỤC MỚI
+// 1 THÊM DANH MỤC MỚI
 // =======================
 if (isset($_POST['add_category'])) {
     $name = trim($_POST['name']);
     $type = $_POST['type'];
 
     if ($name == "") {
-        $message = "⚠️ Tên danh mục không được bỏ trống!";
+        $message = " Tên danh mục không được bỏ trống!";
     } else {
         // Lọc dữ liệu đầu vào
         $name = mysqli_real_escape_string($conn, $name);
@@ -48,20 +48,20 @@ if (isset($_POST['add_category'])) {
         
         $check = mysqli_query($conn, "SELECT * FROM categories WHERE name='$name' AND user_id='$user_id'");
         if (mysqli_num_rows($check) > 0) {
-            $message = "❌ Danh mục đã tồn tại trong danh sách của bạn!";
+            $message = " Danh mục đã tồn tại trong danh sách của bạn!";
         } else {
             $sql = "INSERT INTO categories (user_id, name, type) VALUES ('$user_id', '$name', '$type')";
             if (mysqli_query($conn, $sql)) {
-                $message = "✅ Thêm danh mục **$name** thành công!";
+                $message = " Thêm danh mục **$name** thành công!";
             } else {
-                $message = "❌ Lỗi: " . mysqli_error($conn);
+                $message = " Lỗi: " . mysqli_error($conn);
             }
         }
     }
 }
 
 // =======================
-// 2️⃣ CẬP NHẬT DANH MỤC
+// 2 CẬP NHẬT DANH MỤC
 // =======================
 if (isset($_POST['update_category'])) {
     $id = $_POST['id'];
@@ -80,14 +80,14 @@ if (isset($_POST['update_category'])) {
     }
 
     if (mysqli_query($conn, $sql)) {
-        $message = "✅ Cập nhật danh mục thành công!";
+        $message = " Cập nhật danh mục thành công!";
     } else {
-        $message = "❌ Lỗi: " . mysqli_error($conn);
+        $message = " Lỗi: " . mysqli_error($conn);
     }
 }
 
 // =======================
-// 3️⃣ XÓA DANH MỤC
+// 3 XÓA DANH MỤC
 // =======================
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
@@ -103,16 +103,16 @@ if (isset($_GET['delete_id'])) {
         // Cần thêm bước xóa các giao dịch (income/expense) sử dụng danh mục này trước, 
         // hoặc đặt NULL cho trường category_id. (Tùy thuộc vào foreign key settings). 
         // Hiện tại, ta chỉ xóa danh mục.
-        $message = "✅ Xóa danh mục (ID: $id) thành công!";
+        $message = " Xóa danh mục (ID: $id) thành công!";
     } else {
-        $message = "❌ Lỗi xóa danh mục: " . mysqli_error($conn);
+        $message = " Lỗi xóa danh mục: " . mysqli_error($conn);
     }
     header("Location: quanlydanhmuc.php");
     exit;
 }
 
 // =======================
-// 4️⃣ LẤY DANH SÁCH DANH MỤC
+// 4 LẤY DANH SÁCH DANH MỤC
 // =======================
 $sql_categories = "SELECT c.*, u.username FROM categories c JOIN users u ON c.user_id = u.id";
 
@@ -144,7 +144,7 @@ mysqli_close($conn);
             padding: 0; 
         }
 
-        /* 💥 NEW NAVBAR CSS (Consistent with admin.php) */
+        /*  NEW NAVBAR CSS (Consistent with admin.php) */
         .navbar {
             background-color: #2a5dca; /* Main Blue */
             padding: 15px 30px;
@@ -181,7 +181,7 @@ mysqli_close($conn);
         .navbar-left a:not(.navbar-brand):hover {
             background-color: #3e73d4;
         }
-        /* 💥 Active Link */
+        /*  Active Link */
         .navbar-left a.active {
             background-color: #1a47a1; /* Darker blue to indicate active */
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);

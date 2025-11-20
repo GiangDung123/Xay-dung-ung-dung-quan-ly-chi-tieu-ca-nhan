@@ -7,7 +7,7 @@ if (!isset($_SESSION['username']) || $_SESSION['username'] !== 'admin') {
     exit;
 }
 
-// 1️⃣ Kết nối CSDL
+// 1 Kết nối CSDL
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -20,7 +20,7 @@ if (!$conn) {
 
 $message = "";
 
-// 2️⃣ Xử lý thêm người dùng
+// 2 Xử lý thêm người dùng
 if (isset($_POST['add_user'])) {
     $uname = trim($_POST['username']);
     $pass = $_POST['password'];
@@ -28,7 +28,7 @@ if (isset($_POST['add_user'])) {
     $role = $_POST['role'];
 
     if ($uname == "" || $pass == "") {
-        $message = "⚠️ Tên đăng nhập và mật khẩu không được bỏ trống!";
+        $message = " Tên đăng nhập và mật khẩu không được bỏ trống!";
     } else {
         // Lọc dữ liệu đầu vào
         $uname = mysqli_real_escape_string($conn, $uname);
@@ -37,21 +37,21 @@ if (isset($_POST['add_user'])) {
 
         $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$uname'");
         if (mysqli_num_rows($check) > 0) {
-            $message = "❌ Tên đăng nhập đã tồn tại!";
+            $message = " Tên đăng nhập đã tồn tại!";
         } else {
             $hashed = password_hash($pass, PASSWORD_DEFAULT);
             $sql = "INSERT INTO users (username, password, fullname, role) VALUES ('$uname', '$hashed', '$fullname', '$role')";
             
             if (mysqli_query($conn, $sql)) {
-                $message = "✅ Thêm người dùng **$uname** thành công!";
+                $message = " Thêm người dùng **$uname** thành công!";
             } else {
-                $message = "❌ Lỗi: " . mysqli_error($conn);
+                $message = " Lỗi: " . mysqli_error($conn);
             }
         }
     }
 }
 
-// 3️⃣ Xử lý cập nhật người dùng
+// 3 Xử lý cập nhật người dùng
 if (isset($_POST['update_user'])) {
     $id = $_POST['id'];
     $fullname = trim($_POST['fullname']);
@@ -64,13 +64,13 @@ if (isset($_POST['update_user'])) {
 
     $sql = "UPDATE users SET fullname='$fullname', role='$role' WHERE id='$id'";
     if (mysqli_query($conn, $sql)) {
-        $message = "✅ Cập nhật người dùng thành công!";
+        $message = " Cập nhật người dùng thành công!";
     } else {
-        $message = "❌ Lỗi: " . mysqli_error($conn);
+        $message = " Lỗi: " . mysqli_error($conn);
     }
 }
 
-// 4️⃣ Xử lý xóa người dùng
+// 4 Xử lý xóa người dùng
 if (isset($_GET['delete_id'])) {
     $id = $_GET['delete_id'];
     // Ngăn xóa tài khoản admin chính
@@ -84,12 +84,12 @@ if (isset($_GET['delete_id'])) {
         // Xóa người dùng
         $sql = "DELETE FROM users WHERE id='$id'";
         if (mysqli_query($conn, $sql)) {
-            $message = "✅ Xóa người dùng (ID: $id) và toàn bộ dữ liệu liên quan thành công!";
+            $message = " Xóa người dùng (ID: $id) và toàn bộ dữ liệu liên quan thành công!";
         } else {
-            $message = "❌ Lỗi xóa người dùng: " . mysqli_error($conn);
+            $message = " Lỗi xóa người dùng: " . mysqli_error($conn);
         }
     } else {
-        $message = "❌ Không thể xóa tài khoản Admin chính!";
+        $message = " Không thể xóa tài khoản Admin chính!";
     }
     // Chuyển hướng để xóa tham số trên URL
     header("Location: admin.php");
@@ -97,7 +97,7 @@ if (isset($_GET['delete_id'])) {
 }
 
 
-// 5️⃣ Lấy danh sách người dùng
+// 5 Lấy danh sách người dùng
 $users_query = mysqli_query($conn, "SELECT * FROM users ORDER BY created_at DESC");
 
 mysqli_close($conn);
@@ -119,7 +119,7 @@ mysqli_close($conn);
             padding: 0; 
         }
 
-        /* 💥 NEW NAVBAR CSS */
+        /*  NEW NAVBAR CSS */
         .navbar {
             background-color: #2a5dca; /* Main Blue */
             padding: 15px 30px;
@@ -396,7 +396,7 @@ mysqli_close($conn);
 
     <?php 
     if ($message) {
-        $class = strpos($message, 'thành công') !== false ? 'success' : (strpos($message, 'Lỗi') !== false || strpos($message, '❌') !== false ? 'error' : 'warning');
+        $class = strpos($message, 'thành công') !== false ? 'success' : (strpos($message, 'Lỗi') !== false || strpos($message, ' ') !== false ? 'error' : 'warning');
         echo "<div class='message $class'>" . nl2br($message) . "</div>";
     }
     ?>

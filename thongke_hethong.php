@@ -250,11 +250,11 @@ mysqli_close($conn);
     <h2><i class="fas fa-chart-line"></i> Thống kê Tổng quan Hệ thống</h2>
 
     <div class="summary-grid">
-        <div class="card">👤 Tổng Người dùng<span><?php echo number_format($total_users); ?></span></div>
-        <div class="card">🏷️ Tổng Danh mục<span><?php echo number_format($total_categories); ?></span></div>
-        <div class="card">💰 Tổng Khoản thu<span><?php echo number_format($total_incomes) . " (" . number_format($total_income_money) . " VNĐ)"; ?></span></div>
-        <div class="card">💸 Tổng Khoản chi<span><?php echo number_format($total_expenses) . " (" . number_format($total_expense_money) . " VNĐ)"; ?></span></div>
-        <div class="card" style="grid-column: span 4;">💵 Số dư Hệ thống<span style="color:#27ae60;"><?php echo number_format($total_balance); ?> VNĐ</span></div>
+        <div class="card"> Tổng Người dùng<span><?php echo number_format($total_users); ?></span></div>
+        <div class="card"> Tổng Danh mục<span><?php echo number_format($total_categories); ?></span></div>
+        <div class="card"> Tổng Khoản thu<span><?php echo number_format($total_incomes) . " (" . number_format($total_income_money) . " VNĐ)"; ?></span></div>
+        <div class="card"> Tổng Khoản chi<span><?php echo number_format($total_expenses) . " (" . number_format($total_expense_money) . " VNĐ)"; ?></span></div>
+        <div class="card" style="grid-column: span 4;"> Số dư Hệ thống<span style="color:#27ae60;"><?php echo number_format($total_balance); ?> VNĐ</span></div>
     </div>
     
     <div class="chart-row">
@@ -267,10 +267,6 @@ mysqli_close($conn);
             <h3><i class="fas fa-chart-bar"></i> Thu chi theo tháng (Năm <?php echo $current_year; ?>)</h3>
             <canvas id="chartThuChi"></canvas>
         </div>
-    </div>
-
-    <div class="back">
-        <a href="admin.php">← Quay lại Dashboard</a>
     </div>
 </div>
 

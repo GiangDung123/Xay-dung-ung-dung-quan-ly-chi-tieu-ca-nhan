@@ -29,7 +29,6 @@ $display_range = "";
 
 if (isset($_POST['filter_date']) && !empty($_POST['from_date']) && !empty($_POST['to_date'])) {
     // Lọc theo ngày (Sử dụng mysqli_real_escape_string để an toàn hơn)
-    // Lưu ý: Trong môi trường production, nên sử dụng Prepared Statements.
     $from_date = mysqli_real_escape_string($conn, $_POST['from_date']);
     $to_date = mysqli_real_escape_string($conn, $_POST['to_date']);
     $filter_clause .= " AND e.date BETWEEN '$from_date' AND '$to_date'";
@@ -40,7 +39,6 @@ if (isset($_POST['filter_date']) && !empty($_POST['from_date']) && !empty($_POST
 
 
 // 1. Tổng chi tiêu
-// Cần thêm alias 'e' cho bảng expenses
 $totalQuery = mysqli_query($conn, 
     "SELECT SUM(e.amount) AS total FROM expenses e $filter_clause");
 $total = mysqli_fetch_assoc($totalQuery)['total'] ?? 0;
