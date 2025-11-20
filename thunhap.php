@@ -14,18 +14,6 @@ $message = "";
 // Lấy ID người dùng
 $user_id = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id FROM users WHERE username='$user'"))['id'];
 
-// Thêm danh mục
-if (isset($_POST['them_danhmuc'])) {
-    $new_cat = trim($_POST['new_category']);
-    if ($new_cat != "") {
-        $check = mysqli_query($conn, "SELECT * FROM categories WHERE user_id='$user_id' AND name='$new_cat' AND type='income'");
-        if (mysqli_num_rows($check) == 0) {
-            mysqli_query($conn, "INSERT INTO categories (user_id, name, type) VALUES ('$user_id', '$new_cat', 'income')");
-            $message = "Đã thêm danh mục mới!";
-        } else $message = "Danh mục đã tồn tại!";
-    }
-}
-
 // Thêm thu nhập
 if (isset($_POST['them_thunhap'])) {
     $cat = $_POST['category_id'];

@@ -18,20 +18,26 @@ $message = "";
 
 // Lấy ID người dùng
 $user_id = mysqli_fetch_assoc(mysqli_query($conn, "SELECT id FROM users WHERE username='$user'"))['id'];
-
-// Thêm danh mục chi tiêu
+// Thêm danh mục chi tiêu mới
 if (isset($_POST['them_danhmuc'])) {
     $new_cat = trim($_POST['new_category']);
-    if ($new_cat != "") {
-        $check = mysqli_query($conn, "SELECT * FROM categories WHERE user_id='$user_id' AND name='$new_cat' AND type='expense'");
+
+    if ($new_cat !== "") {
+        $check = mysqli_query($conn,
+            "SELECT * FROM categories 
+            WHERE user_id='$user_id' AND name='$new_cat' AND type='expense'");
+
         if (mysqli_num_rows($check) == 0) {
-            mysqli_query($conn, "INSERT INTO categories (user_id, name, type) VALUES ('$user_id', '$new_cat', 'expense')");
+            mysqli_query($conn,
+                "INSERT INTO categories (user_id, name, type) 
+                VALUES ('$user_id', '$new_cat', 'expense')");
             $message = "Đã thêm danh mục mới!";
         } else {
             $message = "Danh mục đã tồn tại!";
         }
     }
 }
+
 
 // Thêm chi tiêu
 if (isset($_POST['them_chi'])) {
@@ -209,7 +215,12 @@ function toggleEditForm(id) {
     <p style="text-align:center;">Xin chào, <b><?php echo $_SESSION['username']; ?></b></p>
 
     <?php if ($message): ?><p class="message"><?php echo $message; ?></p><?php endif; ?>
-
+    <div id="addCategoryForm" class="hidden-form" style="display:none;">
+        <form method="POST">
+            <input type="text" name="new_category" placeholder="Nhập tên danh mục mới..." required>
+            <button type="submit" name="them_danhmuc" class="small-btn">Lưu</button>
+        </form>
+    </div>
     <form method="POST">
         <label>Thêm chi tiêu:</label>
         <div class="row-flex">
@@ -220,11 +231,6 @@ function toggleEditForm(id) {
                 <?php endwhile; ?>
             </select>
             <button type="button" class="small-btn" onclick="toggleAddCategory()">Thêm</button>
-        </div>
-
-        <div id="addCategoryForm" class="hidden-form">
-            <input type="text" name="new_category" placeholder="Nhập tên danh mục mới...">
-            <button type="submit" name="them_danhmuc" class="small-btn">Lưu</button>
         </div>
 
         <label>Số tiền (VNĐ):</label>
