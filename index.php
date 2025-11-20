@@ -247,8 +247,9 @@ if ($isLoggedIn) {
         </div>
     </div>
 
-    <div class="btn-row">
-        <button class="btn" onclick="window.location='thongke.php'">Thống kê</button>
+     <div class="btn-row">
+        <button class="btn" onclick="window.location='thunhap.php'">Thống kê thu nhập</button>
+        <button class="btn" onclick="window.location='chitieu.php'">Thống kê chi tiêu</button>
     </div>
 </div>
 
