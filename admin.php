@@ -1,13 +1,13 @@
 <?php
 session_start();
 
-// Kiểm tra quyền truy cập
+// Kiểm tra quyền truy cập (chỉ admin)
 if (!isset($_SESSION['username']) || $_SESSION['username'] !== 'admin') {
     header("Location: dangnhap.php");
     exit;
 }
 
-// 1️⃣ Kết nối CSDL
+// 1️⃣ Kết nối CSDL (Giữ lại để đảm bảo tính nhất quán)
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -18,243 +18,138 @@ if (!$conn) {
     die("Kết nối thất bại: " . mysqli_connect_error());
 }
 
-$message = "";
-
-// 2️⃣ Xử lý thêm người dùng
-if (isset($_POST['add_user'])) {
-    $uname = trim($_POST['username']);
-    $pass = $_POST['password'];
-    $fullname = trim($_POST['fullname']);
-    $role = $_POST['role'];
-
-    if ($uname == "" || $pass == "") {
-        $message = "⚠️ Tên đăng nhập và mật khẩu không được bỏ trống!";
-    } else {
-        $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$uname'");
-        if (mysqli_num_rows($check) > 0) {
-            $message = "❌ Tên đăng nhập đã tồn tại!";
-        } else {
-            $hashed = password_hash($pass, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (username, password, fullname, role) VALUES ('$uname', '$hashed', '$fullname', '$role')";
-            if (mysqli_query($conn, $sql)) {
-                $message = "✅ Thêm người dùng thành công!";
-            } else {
-                $message = "❌ Lỗi khi thêm: " . mysqli_error($conn);
-            }
-        }
-    }
-}
-
-// 3️⃣ Xử lý xóa người dùng
-if (isset($_GET['delete_id'])) {
-    $id = intval($_GET['delete_id']);
-    $query = mysqli_query($conn, "SELECT username FROM users WHERE id=$id");
-    $r = mysqli_fetch_assoc($query);
-    if ($r && $r['username'] !== 'admin') {
-        mysqli_query($conn, "DELETE FROM users WHERE id=$id");
-        echo "<script>alert('Đã xóa người dùng thành công!'); window.location='admin.php';</script>";
-        exit;
-    } else {
-        $message = "⚠️ Không thể xóa tài khoản admin!";
-    }
-}
-
-// 4️⃣ Xử lý cập nhật người dùng
-if (isset($_POST['update_user'])) {
-    $id = intval($_POST['user_id']);
-    $fullname = trim($_POST['fullname']);
-    $role = $_POST['role'];
-
-    $sql = "UPDATE users SET fullname='$fullname', role='$role' WHERE id=$id";
-    if (mysqli_query($conn, $sql)) {
-        $message = "✅ Cập nhật thông tin người dùng thành công!";
-    } else {
-        $message = "❌ Lỗi cập nhật: " . mysqli_error($conn);
-    }
-}
-
-// 5️⃣ Lấy danh sách người dùng
-$result = mysqli_query($conn, "SELECT id, username, fullname, role, created_at FROM users ORDER BY id ASC");
+// Đóng kết nối DB
+mysqli_close($conn); 
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Quản trị hệ thống - Quản lý thu chi</title>
-<style>
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #fef9e7, #fdebd0);
-    margin: 0;
-    padding: 0;
-}
-.container {
-    max-width: 1100px;
-    margin: 40px auto;
-    background: #fff;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-h2 {
-    text-align: center;
-    color: #d35400;
-    margin-bottom: 25px;
-}
-.top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-.top-bar a {
-    text-decoration: none;
-    padding: 10px 20px;
-    background: #d35400;
-    color: white;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: 0.2s;
-}
-.top-bar a:hover {
-    background: #e67e22;
-}
-.message {
-    text-align: center;
-    color: #c0392b;
-    font-weight: 600;
-    margin-bottom: 10px;
-}
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-th, td {
-    border-bottom: 1px solid #eee;
-    text-align: center;
-    padding: 10px;
-    font-size: 15px;
-}
-th {
-    background: #fff5e1;
-    color: #2c3e50;
-}
-tr:hover {
-    background: #fdf2e9;
-}
-.action-btn {
-    text-decoration: none;
-    background: #e74c3c;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 14px;
-}
-.action-btn:hover {
-    background: #c0392b;
-}
-form.add-user, form.update-user {
-    margin: 25px 0;
-    background: #fff8ec;
-    padding: 20px;
-    border-radius: 10px;
-}
-input, select {
-    padding: 8px;
-    margin: 5px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-}
-button {
-    background: #d35400;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-}
-button:hover {
-    background: #e67e22;
-}
-.logout {
-    text-align: right;
-    margin-top: 15px;
-}
-.logout a {
-    color: #d63031;
-    text-decoration: none;
-    font-weight: bold;
-}
-.logout a:hover {
-    text-decoration: underline;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển Admin</title>
+    <style>
+        /* Modern Reset/Base Styles */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background-color: #f0f2f5; 
+            color: #1c1e21; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container { 
+            width: 100%;
+            max-width: 900px; /* Tăng kích thước tối đa */
+            background: #ffffff; 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+            text-align: center; 
+        }
+        
+        /* Header */
+        h2 { 
+            color: #007bff; /* Màu xanh dương hiện đại */
+            margin-bottom: 5px; 
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        p { 
+            margin-bottom: 40px; 
+            color: #606770; 
+            font-size: 1.1rem;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Cột linh hoạt */
+            gap: 25px; 
+            margin-top: 30px;
+        }
+
+        /* Dashboard Item - Sử dụng thẻ <a> làm khối chính để cả khối là link */
+        .dashboard-item {
+            text-decoration: none; /* Bỏ gạch chân link */
+            background-color: #f7f9fa; /* Nền nhẹ */
+            padding: 30px; 
+            border-radius: 12px; 
+            text-align: center; 
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
+            border: 1px solid #e1e4e8;
+            display: flex; /* Dùng flexbox để căn giữa nội dung */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #1c1e21; /* Màu chữ mặc định */
+        }
+        .dashboard-item:hover {
+            transform: translateY(-8px); /* Nhấc lên khi hover */
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); /* Shadow sâu hơn */
+            background-color: #eaf3ff; /* Nền xanh nhạt khi hover */
+        }
+        
+        .dashboard-item i {
+            font-size: 48px; /* Icon to hơn */
+            color: #007bff;
+            margin-bottom: 15px;
+            display: block;
+            line-height: 1; /* Cân bằng icon */
+        }
+
+        .dashboard-item span {
+            color: #007bff;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        /* Logout Button */
+        .logout { margin-top: 40px; }
+        .logout a { 
+            color: #dc3545; /* Màu đỏ cho Đăng xuất */
+            text-decoration: none; 
+            font-weight: 600; 
+            padding: 12px 30px; 
+            border: 2px solid #dc3545; 
+            border-radius: 8px; 
+            transition: all 0.3s; 
+            display: inline-block;
+            font-size: 1rem;
+        }
+        .logout a:hover { 
+            background-color: #dc3545; 
+            color: white; 
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+    </style>
 </head>
 <body>
+
 <div class="container">
-    <h2>👑 Quản trị người dùng hệ thống</h2>
+    <h2>👋 Chào mừng Admin, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h2>
+    <p>Bảng điều khiển quản trị hệ thống.</p>
+    
+    <div class="dashboard-grid">
+        
+        <a href="quanlynguoidung.php" class="dashboard-item">
+            <i>👥</i>
+            <span>Quản lý Người dùng</span>
+        </a>
 
-    <div class="top-bar">
-        <a href="thongke_hethong.php">📊 Thống kê hệ thống</a>
-        <a href="quanlydanhmuc.php">📂 Quản lý danh mục</a>
+        <a href="quanlydanhmuc.php" class="dashboard-item">
+            <i>🏷️</i>
+            <span>Quản lý Danh mục</span>
+        </a>
+
+        <a href="thongke_hethong.php" class="dashboard-item">
+            <i>📈</i>
+            <span>Thống kê Hệ thống</span>
+        </a>
     </div>
-
-    <p class="message"><?php echo $message; ?></p>
-
-    <!-- Form thêm người dùng -->
-    <form method="POST" class="add-user">
-        <h3>➕ Thêm người dùng mới</h3>
-        <input type="text" name="username" placeholder="Tên đăng nhập" required>
-        <input type="password" name="password" placeholder="Mật khẩu" required>
-        <input type="text" name="fullname" placeholder="Họ và tên">
-        <select name="role">
-            <option value="user">Người dùng</option>
-            <option value="admin">Quản trị viên</option>
-        </select>
-        <button type="submit" name="add_user">Thêm</button>
-    </form>
-
-    <!-- Danh sách người dùng -->
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Tên đăng nhập</th>
-            <th>Họ tên</th>
-            <th>Quyền</th>
-            <th>Ngày tạo</th>
-            <th>Thao tác</th>
-        </tr>
-        <?php if (mysqli_num_rows($result) > 0): ?>
-            <?php while ($row = mysqli_fetch_assoc($result)): ?>
-                <tr>
-                    <form method="POST" class="update-user">
-                        <td><?php echo $row['id']; ?><input type="hidden" name="user_id" value="<?php echo $row['id']; ?>"></td>
-                        <td><?php echo htmlspecialchars($row['username']); ?></td>
-                        <td><input type="text" name="fullname" value="<?php echo htmlspecialchars($row['fullname']); ?>"></td>
-                        <td>
-                            <select name="role">
-                                <option value="user" <?php if ($row['role']=='user') echo 'selected'; ?>>User</option>
-                                <option value="admin" <?php if ($row['role']=='admin') echo 'selected'; ?>>Admin</option>
-                            </select>
-                        </td>
-                        <td><?php echo $row['created_at']; ?></td>
-                        <td>
-                            <?php if ($row['username'] !== 'admin'): ?>
-                                <button type="submit" name="update_user">💾 Lưu</button>
-                                <a class="action-btn" href="admin.php?delete_id=<?php echo $row['id']; ?>" onclick="return confirm('Xóa người dùng này?');">Xóa</a>
-                            <?php else: ?>
-                                <span style="color:gray;">(Admin chính)</span>
-                            <?php endif; ?>
-                        </td>
-                    </form>
-                </tr>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <tr><td colspan="6">Chưa có người dùng nào</td></tr>
-        <?php endif; ?>
-    </table>
 
     <div class="logout">
         <a href="dangxuat.php">Đăng xuất</a>

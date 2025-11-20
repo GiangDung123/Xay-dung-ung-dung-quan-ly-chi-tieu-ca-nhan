@@ -34,7 +34,7 @@ if (isset($_POST['them_thunhap'])) {
     $date = $_POST['date'];
     $catName = mysqli_fetch_assoc(mysqli_query($conn, "SELECT name FROM categories WHERE id='$cat'"))['name'];
     mysqli_query($conn, "INSERT INTO incomes (user_id, category_id, title, amount, note, date)
-                         VALUES ('$user_id','$cat','$catName','$amount','$note','$date')");
+                        VALUES ('$user_id','$cat','$catName','$amount','$note','$date')");
     $message = "Đã thêm thu nhập!";
 }
 
@@ -53,8 +53,8 @@ if (isset($_POST['capnhat_thu'])) {
 
 $categories = mysqli_query($conn, "SELECT id, name FROM categories WHERE user_id='$user_id' AND type='income'");
 $result = mysqli_query($conn, "SELECT i.id, i.date, c.name AS category, i.amount, i.note 
-                               FROM incomes i LEFT JOIN categories c ON i.category_id=c.id 
-                               WHERE i.user_id='$user_id' ORDER BY i.date DESC");
+                            FROM incomes i LEFT JOIN categories c ON i.category_id=c.id 
+                            WHERE i.user_id='$user_id' ORDER BY i.date DESC");
 // =============================
 // XỬ LÝ THÊM DANH MỤC
 // =============================
@@ -64,12 +64,12 @@ if (isset($_POST['them_danhmuc'])) {
     if ($new_cat !== "") {
         $check = mysqli_query($conn,
             "SELECT * FROM categories 
-             WHERE user_id='$user_id' AND name='$new_cat' AND type='income'");
+            WHERE user_id='$user_id' AND name='$new_cat' AND type='income'");
 
         if (mysqli_num_rows($check) == 0) {
             mysqli_query($conn,
                 "INSERT INTO categories (user_id, name, type) 
-                 VALUES ('$user_id', '$new_cat', 'income')");
+                VALUES ('$user_id', '$new_cat', 'income')");
             $message = "Đã thêm danh mục mới!";
         } else {
             $message = "Danh mục đã tồn tại!";

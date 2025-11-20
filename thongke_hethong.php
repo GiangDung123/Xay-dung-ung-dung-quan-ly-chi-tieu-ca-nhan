@@ -32,134 +32,310 @@ $total_expense_money = $expense_data['total_money'] ?? 0;
 
 $total_balance = $total_income_money - $total_expense_money;
 
-// 3. Lấy thống kê thu – chi theo tháng
-$chart_data = [];
-$sql_chart = "
-    SELECT 
-        MONTH(date) AS month,
-        SUM(CASE WHEN 'incomes' THEN amount ELSE 0 END) AS income,
-        0 AS expense
-    FROM incomes
-    GROUP BY MONTH(date)
-    UNION ALL
-    SELECT 
-        MONTH(date) AS month,
-        0 AS income,
-        SUM(amount) AS expense
-    FROM expenses
-    GROUP BY MONTH(date)
-";
-$result_chart = mysqli_query($conn, $sql_chart);
-$monthly = [];
 
-while ($row = mysqli_fetch_assoc($result_chart)) {
-    $month = $row['month'];
-    if (!isset($monthly[$month])) {
-        $monthly[$month] = ['income' => 0, 'expense' => 0];
-    }
-    $monthly[$month]['income'] += $row['income'];
-    $monthly[$month]['expense'] += $row['expense'];
+// 3. Thống kê thu chi theo tháng (cho biểu đồ cột)
+$current_year = date("Y");
+$months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+$income_values = array_fill(0, 12, 0);
+$expense_values = array_fill(0, 12, 0);
+
+// Lấy dữ liệu thu nhập
+$sql_income_monthly = "SELECT MONTH(date) as month, SUM(amount) as total FROM incomes WHERE YEAR(date) = '$current_year' GROUP BY MONTH(date)";
+$result_income = mysqli_query($conn, $sql_income_monthly);
+while ($row = mysqli_fetch_assoc($result_income)) {
+    $income_values[$row['month'] - 1] = (int)$row['total'];
 }
 
-$months = [];
-$income_values = [];
-$expense_values = [];
-foreach ($monthly as $m => $v) {
-    $months[] = "Tháng " . $m;
-    $income_values[] = $v['income'];
-    $expense_values[] = $v['expense'];
+// Lấy dữ liệu chi tiêu
+$sql_expense_monthly = "SELECT MONTH(date) as month, SUM(amount) as total FROM expenses WHERE YEAR(date) = '$current_year' GROUP BY MONTH(date)";
+$result_expense = mysqli_query($conn, $sql_expense_monthly);
+while ($row = mysqli_fetch_assoc($result_expense)) {
+    $expense_values[$row['month'] - 1] = (int)$row['total'];
 }
+
+mysqli_close($conn);
 ?>
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<title>Thống kê hệ thống - Admin</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<style>
-body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #fef9e7, #fdebd0);
-    margin: 0;
-    padding: 0;
-}
-.container {
-    max-width: 1000px;
-    margin: 40px auto;
-    background: #fff;
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-}
-h2 {
-    color: #d35400;
-    text-align: center;
-}
-.stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 15px;
-    margin-top: 25px;
-}
-.card {
-    background: #fff5e1;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    text-align: center;
-    font-weight: bold;
-}
-.card span {
-    display: block;
-    font-size: 22px;
-    color: #2c3e50;
-    margin-top: 10px;
-}
-.chart-container {
-    margin-top: 40px;
-}
-.back {
-    text-align: center;
-    margin-top: 25px;
-}
-.back a {
-    background: #d35400;
-    color: white;
-    padding: 10px 25px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: bold;
-}
-.back a:hover {
-    background: #e67e22;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thống kê Hệ thống</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background-color: #f0f2f5; 
+            color: #333; 
+            margin: 0; 
+            padding: 0; 
+        }
+
+        /* 💥 NEW NAVBAR CSS (Consistent with admin.php) */
+        .navbar {
+            background-color: #2a5dca; /* Main Blue */
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky; 
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar-left {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .navbar-left a, .navbar-right a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            white-space: nowrap; 
+        }
+        .navbar-brand {
+            font-size: 20px;
+            font-weight: bold;
+            color: white !important;
+            padding: 0 15px 0 0;
+            background: none !important;
+            border-right: 1px solid rgba(255,255,255,0.3);
+        }
+        .navbar-left a:not(.navbar-brand):hover {
+            background-color: #3e73d4;
+        }
+        /* 💥 Active Link */
+        .navbar-left a[href*="thongke_hethong"] {
+            background-color: #1a47a1; /* Darker blue to indicate active */
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-right a {
+            background-color: #e74c3c; 
+        }
+        .navbar-right a:hover {
+            background-color: #c0392b;
+        }
+        /* END NAVBAR CSS */
+
+        .container { 
+            max-width: 1200px; /* Tăng chiều rộng để chứa 2 biểu đồ */
+            margin: 40px auto; 
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); 
+        }
+        h2 { 
+            text-align: center; 
+            color: #2a5dca; 
+            margin-bottom: 30px; 
+            font-size: 28px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        h3 {
+            text-align: center;
+            color: #444;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-left: 5px solid #2a5dca;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card span {
+            display: block;
+            font-size: 24px;
+            color: #2a5dca;
+            margin-top: 5px;
+            font-weight: 900;
+        }
+        .card:nth-child(1) { border-left-color: #3498db; } /* Users */
+        .card:nth-child(2) { border-left-color: #9b59b6; } /* Categories */
+        .card:nth-child(3) { border-left-color: #2ecc71; } /* Incomes */
+        .card:nth-child(4) { border-left-color: #e74c3c; } /* Expenses */
+        .card:nth-child(5) { border-left-color: #f1c40f; } /* Balance */
+        .card:nth-child(3) span { color: #2ecc71; }
+        .card:nth-child(4) span { color: #e74c3c; }
+
+        /* --- NEW CHART LAYOUT CSS --- */
+        .chart-row {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .chart-container-half {
+            flex: 1;
+            min-width: 0; 
+            height: 450px; /* Chiều cao cố định cho 2 biểu đồ */
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        }
+        /* Tùy chỉnh cho biểu đồ tròn để nó không bị kéo dãn */
+        #chartRatio {
+            max-width: 90%;
+            max-height: 90%;
+            margin: 0 auto;
+        }
+
+        .back {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .back a {
+            color: #2a5dca;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .card:nth-child(5) { grid-column: span 2; } /* Balance card span 2 on smaller screen */
+
+            .chart-row {
+                flex-direction: column; /* Xếp chồng biểu đồ trên màn hình nhỏ */
+            }
+            .chart-container-half {
+                height: 400px; /* Điều chỉnh chiều cao cho màn hình nhỏ */
+            }
+        }
+        @media (max-width: 576px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .card:nth-child(5) { grid-column: span 1; }
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-    <h2>📊 Thống kê hệ thống</h2>
-
-    <div class="stats">
-        <div class="card">👥 Người dùng<span><?php echo $total_users; ?></span></div>
-        <div class="card">📂 Danh mục<span><?php echo $total_categories; ?></span></div>
-        <div class="card">💰 Khoản thu<span><?php echo $total_incomes . " (" . number_format($total_income_money) . " VNĐ)"; ?></span></div>
-        <div class="card">💸 Khoản chi<span><?php echo $total_expenses . " (" . number_format($total_expense_money) . " VNĐ)"; ?></span></div>
-        <div class="card">💵 Số dư hệ thống<span style="color:#27ae60;"><?php echo number_format($total_balance); ?> VNĐ</span></div>
+<nav class="navbar">
+    <div class="navbar-left">
+        <a href="admin.php" class="navbar-brand"><i class="fas fa-shield-alt"></i> ADMIN PANEL</a>
+        <a href="quanlynguoidung.php"><i class="fas fa-users-cog"></i> Quản lý Người dùng</a>
+        <a href="quanlydanhmuc.php"><i class="fas fa-tags"></i> Quản lý Danh mục</a>
+        <a href="thongke_hethong.php" class="active"><i class="fas fa-chart-line"></i> Thống kê Hệ thống</a>
     </div>
+    <div class="navbar-right">
+        <a href="dangxuat.php"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+    </div>
+</nav>
+<div class="container">
+    <h2><i class="fas fa-chart-line"></i> Thống kê Tổng quan Hệ thống</h2>
 
-    <div class="chart-container">
-        <canvas id="chartThuChi"></canvas>
+    <div class="summary-grid">
+        <div class="card">👤 Tổng Người dùng<span><?php echo number_format($total_users); ?></span></div>
+        <div class="card">🏷️ Tổng Danh mục<span><?php echo number_format($total_categories); ?></span></div>
+        <div class="card">💰 Tổng Khoản thu<span><?php echo number_format($total_incomes) . " (" . number_format($total_income_money) . " VNĐ)"; ?></span></div>
+        <div class="card">💸 Tổng Khoản chi<span><?php echo number_format($total_expenses) . " (" . number_format($total_expense_money) . " VNĐ)"; ?></span></div>
+        <div class="card" style="grid-column: span 4;">💵 Số dư Hệ thống<span style="color:#27ae60;"><?php echo number_format($total_balance); ?> VNĐ</span></div>
+    </div>
+    
+    <div class="chart-row">
+        <div class="chart-container-half">
+            <h3><i class="fas fa-chart-pie"></i> Phân bổ Thu/Chi (Toàn Hệ thống)</h3>
+            <canvas id="chartRatio"></canvas>
+        </div>
+
+        <div class="chart-container-half">
+            <h3><i class="fas fa-chart-bar"></i> Thu chi theo tháng (Năm <?php echo $current_year; ?>)</h3>
+            <canvas id="chartThuChi"></canvas>
+        </div>
     </div>
 
     <div class="back">
-        <a href="admin.php">← Quay lại trang quản trị</a>
+        <a href="admin.php">← Quay lại Dashboard</a>
     </div>
 </div>
 
 <script>
-const ctx = document.getElementById('chartThuChi');
-new Chart(ctx, {
+// Cấu hình ngôn ngữ cho định dạng tiền tệ
+const currencyFormatter = new Intl.NumberFormat('vi-VN', { 
+    style: 'currency', 
+    currency: 'VND',
+    minimumFractionDigits: 0 // Bỏ số thập phân
+});
+const numberFormatter = new Intl.NumberFormat('vi-VN');
+
+
+// ===================================
+// 1. Biểu đồ Tỷ lệ Thu/Chi (Doughnut Chart)
+// ===================================
+const ctxRatio = document.getElementById('chartRatio');
+new Chart(ctxRatio, {
+    type: 'doughnut',
+    data: {
+        labels: ['Tổng Thu nhập', 'Tổng Chi tiêu'],
+        datasets: [{
+            data: [<?php echo $total_income_money; ?>, <?php echo $total_expense_money; ?>],
+            backgroundColor: [
+                '#2ecc71', // Green for Income (Thu nhập)
+                '#e74c3c'  // Red for Expense (Chi tiêu)
+            ],
+            hoverOffset: 10
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            title: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed !== null) {
+                            // Định dạng giá trị thành tiền tệ
+                            label += currencyFormatter.format(context.parsed);
+                        }
+                        return label;
+                    }
+                }
+            }
+        }
+    }
+});
+
+
+// ===================================
+// 2. Biểu đồ Thu chi theo tháng (Bar Chart)
+// ===================================
+const ctxBar = document.getElementById('chartThuChi');
+new Chart(ctxBar, {
     type: 'bar',
     data: {
         labels: <?php echo json_encode($months); ?>,
@@ -178,12 +354,47 @@ new Chart(ctx, {
     },
     options: {
         responsive: true,
-        plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Biểu đồ thu – chi theo tháng' }
-        },
+        maintainAspectRatio: false,
         scales: {
-            y: { beginAtZero: true }
+            y: {
+                beginAtZero: true,
+                title: {
+                    display: true,
+                    text: 'Số tiền (VNĐ)'
+                },
+                ticks: {
+                    // Định dạng y-axis labels
+                    callback: function(value, index, ticks) {
+                        return numberFormatter.format(value);
+                    }
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: 'Tháng'
+                }
+            }
+        },
+        plugins: {
+            title: {
+                display: false 
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            // Định dạng tooltip thành tiền tệ
+                            label += currencyFormatter.format(context.parsed.y);
+                        }
+                        return label;
+                    }
+                }
+            }
         }
     }
 });
