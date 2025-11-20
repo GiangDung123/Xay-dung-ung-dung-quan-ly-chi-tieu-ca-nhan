@@ -3,7 +3,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "";
-$database = "Quanlythuchi"; // đổi đúng tên database của bạn
+$database = "Quanlythuchi";
 $conn = mysqli_connect($servername, $username, $password, $database);
 
 // 2. Kiểm tra kết nối
@@ -15,25 +15,33 @@ $message = "";
 
 // 3. Khi người dùng bấm nút "Đăng ký"
 if (isset($_POST['dangky'])) {
-    $user = $_POST['username'];
-    $pass = $_POST['password'];
-    $fullname = $_POST['fullname'];
+    $user = trim($_POST['username']);
+    $pass = trim($_POST['password']);
+    $fullname = trim($_POST['fullname']);
+    $phone = trim($_POST['phone']);
 
-    // Mã hóa mật khẩu để bảo mật
-    $hashed = password_hash($pass, PASSWORD_DEFAULT);
-
-    // Kiểm tra xem username có tồn tại chưa
-    $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$user'");
-    if (mysqli_num_rows($check) > 0) {
-        $message = "Tên đăng nhập đã tồn tại!";
+    // Kiểm tra trống
+    if ($user == "" || $pass == "" || $phone == "") {
+        $message = "Vui lòng nhập đầy đủ thông tin!";
     } else {
-        $sql = "INSERT INTO users (username, password, fullname) VALUES ('$user', '$hashed', '$fullname')";
-        if (mysqli_query($conn, $sql)) {
-            // Chuyển hướng về trang đăng nhập
-            echo "<script>alert('Đăng ký thành công! Hãy đăng nhập.'); window.location='dangnhap.php';</script>";
-            exit;
+        // Mã hóa mật khẩu để bảo mật
+        $hashed = password_hash($pass, PASSWORD_DEFAULT);
+
+        // Kiểm tra username tồn tại
+        $check = mysqli_query($conn, "SELECT * FROM users WHERE username='$user'");
+        if (mysqli_num_rows($check) > 0) {
+            $message = "Tên đăng nhập đã tồn tại!";
         } else {
-            $message = "Lỗi khi đăng ký: " . mysqli_error($conn);
+            // Thêm vào DB
+            $sql = "INSERT INTO users (username, password, fullname, phone)
+                    VALUES ('$user', '$hashed', '$fullname', '$phone')";
+            
+            if (mysqli_query($conn, $sql)) {
+                echo "<script>alert('Đăng ký thành công!'); window.location='dangnhap.php';</script>";
+                exit;
+            } else {
+                $message = "Lỗi khi đăng ký: " . mysqli_error($conn);
+            }
         }
     }
 }
@@ -115,7 +123,6 @@ if (isset($_POST['dangky'])) {
         cursor: pointer;
         font-weight: bold;
         letter-spacing: 0.5px;
-        transition: background 0.3s ease, transform 0.1s ease;
     }
 
     button:hover {
@@ -151,7 +158,9 @@ if (isset($_POST['dangky'])) {
 <body>
 <div class="container">
     <h2>Đăng ký tài khoản</h2>
+
     <form method="POST">
+
         <label>Tên đăng nhập:</label>
         <input type="text" name="username" required>
 
@@ -161,10 +170,15 @@ if (isset($_POST['dangky'])) {
         <label>Họ và tên:</label>
         <input type="text" name="fullname">
 
+        <label>Số điện thoại:</label>
+        <input type="text" name="phone" required placeholder="Ví dụ: 0912345678">
+
         <button type="submit" name="dangky">Đăng ký</button>
     </form>
+
     <p class="message"><?php echo $message; ?></p>
-    <p style="text-align:center;">Đã có tài khoản? <a href="dangnhap.php">Đăng nhập</a></p>
+
+    <p>Đã có tài khoản? <a href="dangnhap.php">Đăng nhập</a></p>
 </div>
 </body>
 </html>

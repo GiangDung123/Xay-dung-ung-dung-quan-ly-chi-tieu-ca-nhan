@@ -220,9 +220,6 @@ if ($isLoggedIn) {
                     <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
                 <?php endif; ?>
             </table>
-            <div style="text-align:center; margin-top:8px;">
-                <a href="thunhap.php">Xem thêm →</a>
-            </div>
         </div>
 
         <div class="history-box">
@@ -241,15 +238,17 @@ if ($isLoggedIn) {
                     <tr><td colspan="3" style="text-align:center;">Chưa có dữ liệu</td></tr>
                 <?php endif; ?>
             </table>
-            <div style="text-align:center; margin-top:8px;">
-                <a href="chitieu.php">Xem thêm →</a>
-            </div>
         </div>
     </div>
 
-     <div class="btn-row">
-        <button class="btn" onclick="window.location='thunhap.php'">Thống kê thu nhập</button>
-        <button class="btn" onclick="window.location='chitieu.php'">Thống kê chi tiêu</button>
+    <div class="btn-row">
+        <button class="btn" onclick="window.location='thunhap.php'">Thêm thu nhập</button>
+        <button class="btn" onclick="window.location='thongke_thunhap.php'">Thống kê thu nhập</button>
+        <button class="btn" onclick="window.location='chitieu.php'">Thêm Chi tiêu</button>
+        <button class="btn" onclick="window.location='thongke_chitieu.php'">Thống kê chi tiêu</button>
+    </div>
+    <div class="btn-row">
+        <button class="btn" onclick="window.location='thongke.php'">Thống kê</button>
     </div>
 </div>
 

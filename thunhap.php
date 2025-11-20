@@ -197,7 +197,7 @@ function toggleEditForm(id) {
 </head>
 <body>
 <div class="container">
-    <h2>Quản lý thu nhập</h2>
+    <h2>Thêm thu nhập</h2>
     <p>Xin chào, <b><?php echo $_SESSION['username']; ?></b></p>
 
     <?php if ($message): ?><p class="message"><?php echo $message; ?></p><?php endif; ?>
@@ -269,6 +269,8 @@ function toggleEditForm(id) {
         </tr>
         <?php endwhile; ?>
     </table>
+    <br>
+    <a href="thongke_thunhap.php" class="small-btn" >Thống kê thu nhập</a>
 
     <div class="back"><a href="index.php">← Quay lại trang chính</a></div>
 </div>

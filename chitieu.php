@@ -211,7 +211,7 @@ function toggleEditForm(id) {
     <?php if ($message): ?><p class="message"><?php echo $message; ?></p><?php endif; ?>
 
     <form method="POST">
-        <label>Danh mục chi tiêu:</label>
+        <label>Thêm chi tiêu:</label>
         <div class="row-flex">
             <select name="category_id" required>
                 <option value="">-- Chọn danh mục --</option>
@@ -277,10 +277,14 @@ function toggleEditForm(id) {
         </tr>
         <?php endwhile; ?>
     </table>
+    <br>
+    <a href="thongke_chitieu.php" class="small-btn" >Thống kê chi tiêu</a>
 
     <div class="back">
         <a href="index.php">← Quay lại trang chính</a>
     </div>
+    
+
 </div>
 </body>
 </html>
