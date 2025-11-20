@@ -12,15 +12,24 @@ $conn = mysqli_connect("localhost", "root", "", "Quanlythuchi");
 if (!$conn) die("Kết nối thất bại: " . mysqli_connect_error());
 
 $user = $_SESSION['username'];
-
-// Lấy user_id
 $userQuery = mysqli_query($conn, "SELECT id FROM users WHERE username='$user'");
 $userData = mysqli_fetch_assoc($userQuery);
 $user_id = $userData['id'];
 
-// 1. Tổng thu nhập
+// =============================
+// NHẬN BỘ LỌC NGÀY
+// =============================
+$from = $_GET['from'] ?? "";
+$to   = $_GET['to'] ?? "";
+$where = "WHERE user_id='$user_id'";
+
+if ($from !== "" && $to !== "") {
+    $where .= " AND date BETWEEN '$from' AND '$to'";
+}
+
+// 1. Tổng thu nhập theo bộ lọc
 $totalQuery = mysqli_query($conn, 
-    "SELECT SUM(amount) AS total FROM incomes WHERE user_id='$user_id'");
+    "SELECT SUM(amount) AS total FROM incomes $where");
 $total = mysqli_fetch_assoc($totalQuery)['total'] ?? 0;
 
 // 2. Thu nhập theo tháng (12 tháng)
@@ -49,6 +58,23 @@ while ($r = mysqli_fetch_assoc($catQuery)) {
     $catLabels[] = $r['name'];
     $catValues[] = $r['tong'];
 }
+
+// 4. Thu nhập theo tuần (WEEK)
+$weeklyQuery = mysqli_query($conn,
+    "SELECT YEARWEEK(date,1) AS week, SUM(amount) AS tong
+     FROM incomes
+     WHERE user_id='$user_id'
+     GROUP BY YEARWEEK(date,1)
+     ORDER BY YEARWEEK(date,1)");
+
+$week_labels = [];
+$week_values = [];
+
+while ($r = mysqli_fetch_assoc($weeklyQuery)) {
+    $week_labels[] = "Tuần " . substr($r['week'], 4) . " / " . substr($r['week'], 0, 4);
+    $week_values[] = $r['tong'];
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -56,6 +82,7 @@ while ($r = mysqli_fetch_assoc($catQuery)) {
 <meta charset="UTF-8">
 <title>Thống kê thu nhập</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
     body {
         font-family: Segoe UI, sans-serif;
@@ -84,8 +111,25 @@ while ($r = mysqli_fetch_assoc($catQuery)) {
         border-radius: 10px;
         font-size: 18px;
     }
-    canvas {
-        margin-top: 20px;
+    .filter-box {
+        background: #f0f6ff;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    label { font-weight: bold; }
+    input[type="date"] {
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+    button {
+        padding: 8px 12px;
+        background: #0078ff;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
     }
     .back {
         text-align: center;
@@ -103,10 +147,28 @@ while ($r = mysqli_fetch_assoc($catQuery)) {
 <div class="container">
     <h2>THỐNG KÊ THU NHẬP</h2>
 
+    <!-- FILTER -->
+    <div class="filter-box">
+        <form method="GET">
+            <label>Từ ngày:</label>
+            <input type="date" name="from" value="<?php echo $from; ?>">
+
+            <label style="margin-left:20px">Đến ngày:</label>
+            <input type="date" name="to" value="<?php echo $to; ?>">
+
+            <button type="submit">Lọc</button>
+            <a href="thongke_thunhap.php" style="margin-left:10px; color:red; font-weight:bold;">Reset</a>
+        </form>
+    </div>
+
     <div class="card">
         <b>Tổng thu nhập:</b> 
         <?php echo number_format($total, 0); ?> VNĐ
     </div>
+
+    <!-- WEEKLY CHART -->
+    <h3>Biểu đồ thu nhập theo tuần</h3>
+    <canvas id="weekChart"></canvas>
 
     <h3>Biểu đồ thu nhập theo tháng</h3>
     <canvas id="chartMonth"></canvas>
@@ -118,6 +180,22 @@ while ($r = mysqli_fetch_assoc($catQuery)) {
 </div>
 
 <script>
+// --- Biểu đồ theo tuần ---
+new Chart(document.getElementById("weekChart"), {
+    type: "line",
+    data: {
+        labels: <?php echo json_encode($week_labels); ?>,
+        datasets: [{
+            label: "Thu nhập theo tuần",
+            data: <?php echo json_encode($week_values); ?>,
+            borderWidth: 2,
+            borderColor: "#0078ff",
+            backgroundColor: "rgba(0,120,255,0.1)",
+            tension: 0.2
+        }]
+    }
+});
+
 // --- Biểu đồ thu nhập theo tháng ---
 new Chart(document.getElementById('chartMonth'), {
     type: 'bar',

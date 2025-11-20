@@ -55,6 +55,29 @@ $categories = mysqli_query($conn, "SELECT id, name FROM categories WHERE user_id
 $result = mysqli_query($conn, "SELECT i.id, i.date, c.name AS category, i.amount, i.note 
                                FROM incomes i LEFT JOIN categories c ON i.category_id=c.id 
                                WHERE i.user_id='$user_id' ORDER BY i.date DESC");
+// =============================
+// XỬ LÝ THÊM DANH MỤC
+// =============================
+if (isset($_POST['them_danhmuc'])) {
+    $new_cat = trim($_POST['new_category']);
+
+    if ($new_cat !== "") {
+        $check = mysqli_query($conn,
+            "SELECT * FROM categories 
+             WHERE user_id='$user_id' AND name='$new_cat' AND type='income'");
+
+        if (mysqli_num_rows($check) == 0) {
+            mysqli_query($conn,
+                "INSERT INTO categories (user_id, name, type) 
+                 VALUES ('$user_id', '$new_cat', 'income')");
+            $message = "Đã thêm danh mục mới!";
+        } else {
+            $message = "Danh mục đã tồn tại!";
+        }
+    }
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -201,35 +224,48 @@ function toggleEditForm(id) {
     <p>Xin chào, <b><?php echo $_SESSION['username']; ?></b></p>
 
     <?php if ($message): ?><p class="message"><?php echo $message; ?></p><?php endif; ?>
-
-    <form method="POST">
-        <label>Danh mục thu nhập:</label>
-        <div class="row-flex">
-            <select name="category_id" required>
-                <option value="">-- Chọn danh mục --</option>
-                <?php while ($cat = mysqli_fetch_assoc($categories)): ?>
-                    <option value="<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
-                <?php endwhile; ?>
-            </select>
-            <button type="button" class="small-btn" onclick="toggleAddCategory()">Thêm</button>
-        </div>
-
-        <div id="addCategoryForm" class="hidden-form">
-            <input type="text" name="new_category" placeholder="Nhập tên danh mục mới...">
+        
+    <div id="addCategoryForm" class="hidden-form" style="display:none;">
+        <form method="POST">
+            <input type="text" name="new_category" placeholder="Nhập tên danh mục mới..." required>
             <button type="submit" name="them_danhmuc" class="small-btn">Lưu</button>
-        </div>
+        </form>
+    </div>
+    <form method="POST">
+    <label>Danh mục thu nhập:</label>
+    <div class="row-flex">
+        <select name="category_id" required>
+            <option value="">-- Chọn danh mục --</option>
+            <?php 
+            $categories = mysqli_query($conn, 
+                "SELECT id, name FROM categories 
+                WHERE user_id='$user_id' AND type='income'");
+            while ($cat = mysqli_fetch_assoc($categories)): ?>
+                <option value="<?php echo $cat['id']; ?>">
+                    <?php echo htmlspecialchars($cat['name']); ?>
+                </option>
+            <?php endwhile; ?>
+        </select>
 
-        <label>Số tiền (VNĐ):</label>
-        <input type="number" name="amount" step="0.01" placeholder="Nhập số tiền..." required>
+        <button type="button" class="small-btn" onclick="toggleAddCategory()">Thêm</button>
+    </div>
+    <div id="addCategoryForm" class="hidden-form">
+        <input type="text" name="new_category" placeholder="Nhập tên danh mục mới...">
+        <button type="submit" name="them_danhmuc" class="small-btn">Lưu</button>
+    </div>
 
-        <label>Ngày thu:</label>
-        <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>">
+    <label>Số tiền (VNĐ):</label>
+    <input type="number" name="amount" step="0.01" required>
 
-        <label>Ghi chú:</label>
-        <textarea name="note" rows="3" placeholder="Ví dụ: Lương công ty ABC..."></textarea>
+    <label>Ngày thu:</label>
+    <input type="date" name="date" value="<?php echo date('Y-m-d'); ?>">
 
-        <button type="submit" name="them_thunhap" class="submit-btn">Thêm thu nhập</button>
-    </form>
+    <label>Ghi chú:</label>
+    <textarea name="note" rows="3"></textarea>
+
+    <button type="submit" name="them_thunhap" class="submit-btn">Thêm thu nhập</button>
+</form>
+
 
     <h3 style="margin-bottom:10px;">Danh sách thu nhập</h3>
     <table>
