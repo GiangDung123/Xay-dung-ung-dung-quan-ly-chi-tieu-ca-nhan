@@ -74,7 +74,7 @@ if (isset($_POST['update_category'])) {
     $type = mysqli_real_escape_string($conn, $type);
 
     $sql = "UPDATE categories SET name='$name', type='$type' WHERE id='$id'";
-    // Nếu là user thường, cần thêm điều kiện WHERE user_id='$user_id' để ngăn họ chỉnh sửa danh mục của người khác.
+    // Nếu là user thường, cần thêm điều kiện WHERE user_id='$user_id' để ngăn người dùng chỉnh sửa danh mục của người khác.
     if ($role === 'user') {
         $sql .= " AND user_id='$user_id'";
     }
